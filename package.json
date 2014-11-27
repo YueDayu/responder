@@ -1,0 +1,19 @@
+{
+  "name": "Responder",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "~4.9.0",
+    "morgan": "~1.3.0",
+    "body-parser": "~1.8.1",
+    "cookie-parser": "~1.0.1",
+    "express-session": "~1.9.1",
+    "serve-favicon": "~2.1.3",
+    "socket.io":""
+  },
+  "devDependencies": {
+    "socket.io":"",
+    "express": "~4.9.0",
+    "cookie-parser":"",
+    "body-parser":""
+  }
+}

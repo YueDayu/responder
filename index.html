@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script>
+    function clickME() {
+        var strCookie = document.cookie;
+        alert(strCookie);
+    }
+</script>
+<form method="post">
+    <input type="text" name="username" id="username"> <br>
+    <input type="password" name="password" id="password"> <br>
+    <input type="submit" value="登陆">
+</form>
+<button onclick="clickME()">Click me</button>
+</body>
+</html>
