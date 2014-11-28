@@ -19,8 +19,10 @@
             isStart = !isStart;
             if (isStart) {
                 document.getElementById('startBtn').innerHTML = '结束';
+                document.getElementById('answer').innerHTML = '抢答开始';
             } else {
                 document.getElementById('startBtn').innerHTML = '开始';
+                document.getElementById('answer').innerHTML = '什么都不要点。。';
             }
             socket.emit('admin', isStart);
         }
@@ -32,6 +34,12 @@
             }
             location.reload(true);
         }
+        function init() {
+            isStart = false;
+            document.getElementById('startBtn').innerHTML = '开始';
+            document.getElementById('answer').innerHTML = '什么都不要点。。';
+            socket.emit('admin', isStart);
+        }
     </script>
 </head>
 <body>
@@ -39,7 +47,8 @@
 <h3 id="redteam">红队：0人</h3>
 <h3 id="blueteam">蓝队：0人</h3>
 <button onclick="send()" id="startBtn">开始</button>
-<h1 id="answer">NULL</h1>
+<button onclick="init()">重置</button>
+<h1 id="answer">什么都不要点。。</h1>
 <button onclick="logout()">退出</button>
 </body>
 </html>

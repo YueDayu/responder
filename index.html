@@ -30,7 +30,7 @@
             }
             location.reload(true);
         }
-        var socket = io.connect('http://183.173.63.248');
+        var socket = io.connect('http://192.168.191.1');
         name = getCookie('username');
         team = getCookie('team');
         socket.emit('login', {username : name, team : team});
