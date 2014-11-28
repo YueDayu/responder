@@ -26,7 +26,7 @@
             var keys=document.cookie.match(/[^ =;]+(?=\=)/g);
             if (keys) {
                 for (var i = keys.length; i--;)
-                    document.cookie = keys[i] + '=0;expires=' + new Date( 0).toUTCString();
+                    document.cookie = keys[i] + '=0;expires=' + new Date(0).toUTCString();
             }
             location.reload(true);
         }
@@ -35,12 +35,20 @@
         team = getCookie('team');
         socket.emit('login', {username : name, team : team});
         socket.on('isStart', function(isStart){
-            document.getElementById('test').innerHTML = isStart;
+            document.getElementById('color').style.backgroundColor = isStart ? "#008000" : "#ff0000";
         });
+        socket.on('isanswer', function(teamStr){
+            if (teamStr == team) {
+                document.getElementById('color').style.backgroundColor = "#ffff00";
+            }
+        });
+        function send() {
+            socket.emit('answer');
+        }
     </script>
 </head>
 <body>
-<h1 id="test">Welcome!</h1>
+<div style="width: 300px;height: 300px;background-color: red" onclick="send()" id="color"></div>
 <button onclick="logout()">退出</button>
 </body>
 </html>

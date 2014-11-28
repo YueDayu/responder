@@ -184,16 +184,37 @@ io.on('connection', function (socket) {
         }
         io.emit('status', {redTeam : red, blueTeam : blue});
     });
-    socket.on('admin', function(isStart){ //for admin
+    socket.on('admin', function(isStart){ //for admin when admin open the switch
         io.emit('isStart', isStart);
         if (isStart) {
             currentStatus = 1;
             answerFlag = false;
         } else {
             currentStatus = 0;
+            answerFlag = false;
         }
     });
     socket.on('answer', function(){ //for team member
-
+        if (currentStatus == 0) { //too fast
+            if (answerFlag == false) { //first
+                answerFlag = true;
+                if (socket.name.team == 'red') {
+                    io.emit('answer', '红队抢答');
+                } else {
+                    io.emit('answer', '蓝队抢答');
+                }
+            }
+        } else if(currentStatus == 1) {
+            if (answerFlag == false) { //first
+                answerFlag = true;
+                if (socket.name.team == 'red') {
+                    io.emit('answer', '红队请答题');
+                    io.emit('isanswer', 'red');
+                } else {
+                    io.emit('answer', '蓝队请答题');
+                    io.emit('isanswer', 'blue');
+                }
+            }
+        }
     });
 });
