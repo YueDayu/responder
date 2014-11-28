@@ -5,11 +5,26 @@
     <title>admin</title>
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        var isStart = false;
         var socket = io.connect('http://localhost');
         socket.emit('login', {username : 'admin', team : 'admin'});
+        function send() {
+            isStart = !isStart;
+            socket.emit('admin', isStart);
+        }
+        function logout() {
+            var keys=document.cookie.match(/[^ =;]+(?=\=)/g);
+            if (keys) {
+                for (var i = keys.length; i--;)
+                    document.cookie = keys[i] + '=0;expires=' + new Date( 0).toUTCString();
+            }
+            location.reload(true);
+        }
     </script>
 </head>
 <body>
 <h1>ADMIN</h1>
+<button onclick="send()">Send</button>
+<button onclick="logout()">退出</button>
 </body>
 </html>

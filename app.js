@@ -127,7 +127,24 @@ http.listen(80, function () {
     console.log('Server Start');
 });
 
-var currentStatus = -1; //waiting for admin: -1; waiting for starting: 0; waiting for answer: 1;
+function isallowed(username) {
+    var issuccess = false;
+    for (x in userId['redTeam']) {
+        if (userId['redTeam'][x].username == username) {
+            issuccess = true;
+        }
+    }
+    if (issuccess == false) {
+        for (x in userId['blueTeam']) {
+            if (userId['blueTeam'][x].username == username) {
+                issuccess = true;
+            }
+        }
+    }
+    return issuccess;
+}
+
+var currentStatus = -1; //waiting for admin: -1; waiting for start: 0; waiting for answer: 1;
 var answerFlag = false; //no answer: false; have a answer: true;
 
 io.on('connection', function (socket) {
@@ -136,12 +153,44 @@ io.on('connection', function (socket) {
         var Team = obj.team;
         socket.name = {username: userName, team : Team};
         if (userName == 'admin') {
-            console.log('admin login!');
+            if (currentStatus == 0) {
+                socket.name = {username: 'error', team : 'errorTeam'};
+            }
             currentStatus = 0;
-        } else if(Team == 'red') {
-            console.log('red team member login!');
         } else {
-            console.log('blue team member login!');
+            if(!onlineUsers.hasOwnProperty(userName) && isallowed(userName)) {
+                onlineUsers[userName] = userName;
+                if (Team == 'red') {
+                    red++;
+                } else {
+                    blue++;
+                }
+            } else {
+                socket.name = {username: 'error', team : 'errorTeam'};
+            }
+        }
+        console.log(socket.name);
+    });
+    socket.on('disconnect', function(){
+        if (socket.name.team == 'admin') {
+            currentStatus = -1;
+        } else if (socket.name.team != 'errorTeam' && onlineUsers.hasOwnProperty(socket.name.username)) {
+            var obj = {username : socket.name, team : socket.team};
+            delete onlineUsers[socket.name.username];
+            if (socket.name.team == 'red') {
+                red--;
+            } else {
+                blue--;
+            }
+        }
+    });
+    socket.on('admin', function(isStart){
+        io.emit('isStart', isStart);
+        if (isStart) {
+            currentStatus = 1;
+            answerFlag = false;
+        } else {
+            currentStatus = 0;
         }
     });
 });
