@@ -93,23 +93,23 @@ app.post('/login', function (req, res) {
     console.log(username + password);
     var issuccess = false;
     if (userId['admin'].username == username && userId['admin'].password == password) {
-        res.cookie('username', username);
-        res.cookie('team', 'admin');
+        res.cookie('username', username, {maxAge: 4500000});
+        res.cookie('team', 'admin', {maxAge: 4500000});
         res.redirect('/admin');
         return;
     }
     for (x in userId['redTeam']) {
         if (userId['redTeam'][x].username == username && userId['redTeam'][x].password == password) {
-            res.cookie('username', username);
-            res.cookie('team', 'red');
+            res.cookie('username', username, {maxAge: 4500000});
+            res.cookie('team', 'red', {maxAge: 4500000});
             issuccess = true;
         }
     }
     if (issuccess == false) {
         for (x in userId['blueTeam']) {
             if (userId['blueTeam'][x].username == username && userId['blueTeam'][x].password == password) {
-                res.cookie('username', username);
-                res.cookie('team', 'blue');
+                res.cookie('username', username, {maxAge: 4500000});
+                res.cookie('team', 'blue', {maxAge: 4500000});
                 issuccess = true;
             }
         }
