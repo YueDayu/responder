@@ -33,19 +33,35 @@
         var socket = io.connect('http://192.168.191.1');
         name = getCookie('username');
         team = getCookie('team');
+        var firstSend = true;
+        var answerTooFast = false;
         socket.emit('login', {username : name, team : team});
         socket.on('isStart', function(isStart){
-            document.getElementById('color').style.backgroundColor = isStart ? "#008000" : "#ff0000";
-            document.getElementById('teamName').innerHTML = isStart ? "请抢答" : "请等待开始";
+            if (!answerTooFast) {
+                document.getElementById('color').style.backgroundColor = isStart ? "#008000" : "#ff0000";
+                document.getElementById('teamName').innerHTML = isStart ? "请抢答" : "请等待开始";
+            }
         });
         socket.on('isanswer', function(teamStr){
             if (teamStr == team) {
                 document.getElementById('color').style.backgroundColor = "#ffff00";
                 document.getElementById('teamName').innerHTML = "请回答问题";
             }
+            firstSend = true;
+            answerTooFast = false;
+        });
+        socket.on('answerTooFast', function(teamStr){
+            if (teamStr == team) {
+                document.getElementById('teamName').innerHTML = "回答早了。。";
+                answerTooFast = true;
+            }
         });
         function send() {
-            socket.emit('answer');
+            if (firstSend){
+                socket.emit('answer');
+                document.getElementById('teamName').innerHTML = "已经回答，请等待重置";
+            }
+            firstSend = false;
         }
     </script>
 </head>

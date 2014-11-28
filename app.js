@@ -186,6 +186,7 @@ io.on('connection', function (socket) {
         } else {
             currentStatus = 0;
             answerFlag = false;
+            io.emit('isanswer');
         }
     });
     socket.on('answer', function(){ //for team member
@@ -196,6 +197,7 @@ io.on('connection', function (socket) {
             if (answerFlag == false) { //first
                 answerFlag = true;
                 io.emit('answer', socket.name.team + '队抢答');
+                io.emit('answerTooFast', socket.name.team);
             }
         } else if(currentStatus == 1) {
             if (answerFlag == false) { //first
