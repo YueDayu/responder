@@ -102,7 +102,6 @@ app.post('/login', function (req, res) {
         if (userId['redTeam'][x].username == username && userId['redTeam'][x].password == password) {
             res.cookie('username', username);
             res.cookie('team', 'red');
-            red++;
             issuccess = true;
         }
     }
@@ -111,7 +110,6 @@ app.post('/login', function (req, res) {
             if (userId['blueTeam'][x].username == username && userId['blueTeam'][x].password == password) {
                 res.cookie('username', username);
                 res.cookie('team', 'blue');
-                blue++;
                 issuccess = true;
             }
         }
@@ -169,6 +167,7 @@ io.on('connection', function (socket) {
                 socket.name = {username: 'error', team : 'errorTeam'};
             }
         }
+        io.emit('status', {redTeam : red, blueTeam : blue});
         console.log(socket.name);
     });
     socket.on('disconnect', function(){
@@ -183,8 +182,9 @@ io.on('connection', function (socket) {
                 blue--;
             }
         }
+        io.emit('status', {redTeam : red, blueTeam : blue});
     });
-    socket.on('admin', function(isStart){
+    socket.on('admin', function(isStart){ //for admin
         io.emit('isStart', isStart);
         if (isStart) {
             currentStatus = 1;
@@ -192,5 +192,8 @@ io.on('connection', function (socket) {
         } else {
             currentStatus = 0;
         }
+    });
+    socket.on('answer', function(){ //for team member
+
     });
 });

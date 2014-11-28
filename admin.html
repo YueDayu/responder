@@ -8,6 +8,10 @@
         var isStart = false;
         var socket = io.connect('http://localhost');
         socket.emit('login', {username : 'admin', team : 'admin'});
+        socket.on('status', function(obj){
+            document.getElementById('redteam').innerHTML = '红队：' + obj.redTeam + "人";
+            document.getElementById('blueteam').innerHTML = '蓝队：' + obj.blueTeam + "人";
+        });
         function send() {
             isStart = !isStart;
             socket.emit('admin', isStart);
@@ -23,7 +27,9 @@
     </script>
 </head>
 <body>
-<h1>ADMIN</h1>
+<h1>参赛人数：</h1>
+<h3 id="redteam">红队：0人</h3>
+<h3 id="blueteam">蓝队：0人</h3>
 <button onclick="send()">Send</button>
 <button onclick="logout()">退出</button>
 </body>
