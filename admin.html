@@ -9,14 +9,15 @@
         var socket = io.connect('http://localhost');
         socket.emit('login', {username : 'admin', team : 'admin'});
         socket.on('status', function(obj){
-            document.getElementById('redteam').innerHTML = '红队：' + obj.redTeam + "人";
-            document.getElementById('blueteam').innerHTML = '蓝队：' + obj.blueTeam + "人";
+            document.getElementById('teamInfo').innerHTML = '';
+            for (x in obj) {
+                document.getElementById('teamInfo').innerHTML += (obj[x].teamName + '队：' + obj[x].teamMemNum + '人' + '<br>');
+            }
         });
         socket.on('answer', function(str){
            document.getElementById('answer').innerHTML = str;
         });
-        function send() {
-            isStart = !isStart;
+        socket.on('isStart', function(isStart){
             if (isStart) {
                 document.getElementById('startBtn').innerHTML = '结束';
                 document.getElementById('answer').innerHTML = '抢答开始';
@@ -24,6 +25,9 @@
                 document.getElementById('startBtn').innerHTML = '开始';
                 document.getElementById('answer').innerHTML = '什么都不要点。。';
             }
+        });
+        function send() {
+            isStart = !isStart;
             socket.emit('admin', isStart);
         }
         function logout() {
@@ -44,8 +48,7 @@
 </head>
 <body>
 <h1>参赛人数：</h1>
-<h3 id="redteam">红队：0人</h3>
-<h3 id="blueteam">蓝队：0人</h3>
+<h3 id="teamInfo">红队：0人</h3>
 <button onclick="send()" id="startBtn">开始</button>
 <button onclick="init()">重置</button>
 <h1 id="answer">什么都不要点。。</h1>

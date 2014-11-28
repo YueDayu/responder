@@ -22,6 +22,8 @@ var red = 0;
 var userId;
 //user which is online
 var onlineUsers = {};
+var teamlist = {};
+var userlist = {};
 
 //read the name information
 fs.readFile('password.json', function (err, data) {
@@ -30,10 +32,28 @@ fs.readFile('password.json', function (err, data) {
     } else {
         userId = JSON.parse(data.toString());
     }
+    for (x in userId['teamInfo']) {
+        var teamname = userId['teamInfo'][x].teamName;
+        teamlist[teamname] = {teamName : userId['teamInfo'][x].teamName, teamMemNum : 0};
+        for (y in userId['teamInfo'][x].members) {
+            var userObj = {username : userId['teamInfo'][x].members[y].username,
+                password : userId['teamInfo'][x].members[y].password,
+                team : userId['teamInfo'][x].teamName};
+            userlist[userId['teamInfo'][x].members[y].username] = userObj;
+        }
+    }
 });
 
+function isTeamAllowed(teamName) {
+    return (teamlist.hasOwnProperty(teamName));
+}
+
+function isUsernameAllowed(username) {
+    return (userlist.hasOwnProperty(username));
+}
+
 app.get('/', function (req, res) {
-    if (req.cookies.team == 'red' || req.cookies.team == 'blue') {
+    if (isTeamAllowed(req.cookies.team)) {
         fs.readFile('index.html', function (err, data) {
             if (err) {
                 console.log("can not open the file");
@@ -89,8 +109,6 @@ app.get('*', function (req, res) {
 app.post('/login', function (req, res) {
     var username = req.param('username', null);
     var password = req.param('password', null);
-    console.log(req.body);
-    console.log(username + password);
     var issuccess = false;
     if (userId['admin'].username == username && userId['admin'].password == password) {
         res.cookie('username', username, {maxAge: 4500000});
@@ -98,20 +116,11 @@ app.post('/login', function (req, res) {
         res.redirect('/admin');
         return;
     }
-    for (x in userId['redTeam']) {
-        if (userId['redTeam'][x].username == username && userId['redTeam'][x].password == password) {
+    if (isUsernameAllowed(username)){
+        if (userlist[username].password == password) {
             res.cookie('username', username, {maxAge: 4500000});
-            res.cookie('team', 'red', {maxAge: 4500000});
+            res.cookie('team', userlist[username].team, {maxAge: 4500000});
             issuccess = true;
-        }
-    }
-    if (issuccess == false) {
-        for (x in userId['blueTeam']) {
-            if (userId['blueTeam'][x].username == username && userId['blueTeam'][x].password == password) {
-                res.cookie('username', username, {maxAge: 4500000});
-                res.cookie('team', 'blue', {maxAge: 4500000});
-                issuccess = true;
-            }
         }
     }
     if (issuccess == true) {
@@ -124,23 +133,6 @@ app.post('/login', function (req, res) {
 http.listen(80, function () {
     console.log('Server Start');
 });
-
-function isallowed(username) {
-    var issuccess = false;
-    for (x in userId['redTeam']) {
-        if (userId['redTeam'][x].username == username) {
-            issuccess = true;
-        }
-    }
-    if (issuccess == false) {
-        for (x in userId['blueTeam']) {
-            if (userId['blueTeam'][x].username == username) {
-                issuccess = true;
-            }
-        }
-    }
-    return issuccess;
-}
 
 var currentStatus = -1; //waiting for admin: -1; waiting for start: 0; waiting for answer: 1;
 var answerFlag = false; //no answer: false; have a answer: true;
@@ -156,18 +148,14 @@ io.on('connection', function (socket) {
             }
             currentStatus = 0;
         } else {
-            if(!onlineUsers.hasOwnProperty(userName) && isallowed(userName)) {
+            if(!onlineUsers.hasOwnProperty(userName) && isUsernameAllowed(userName)) {
                 onlineUsers[userName] = userName;
-                if (Team == 'red') {
-                    red++;
-                } else {
-                    blue++;
-                }
+                teamlist[Team].teamMemNum++;
             } else {
                 socket.name = {username: 'error', team : 'errorTeam'};
             }
         }
-        io.emit('status', {redTeam : red, blueTeam : blue});
+        io.emit('status', teamlist);
         console.log("LOGIN:" + socket.name);
     });
     socket.on('disconnect', function(){
@@ -179,13 +167,9 @@ io.on('connection', function (socket) {
         } else if (socket.name.team != 'errorTeam' && onlineUsers.hasOwnProperty(socket.name.username)) {
             var obj = {username : socket.name, team : socket.team};
             delete onlineUsers[socket.name.username];
-            if (socket.name.team == 'red') {
-                red--;
-            } else {
-                blue--;
-            }
+            teamlist[socket.name.team].teamMemNum--;
         }
-        io.emit('status', {redTeam : red, blueTeam : blue});
+        io.emit('status', teamlist);
         console.log("LOGOUT:" + socket.name);
     });
     socket.on('admin', function(isStart){ //for admin when admin open the switch
@@ -211,22 +195,13 @@ io.on('connection', function (socket) {
         if (currentStatus == 0) { //too fast
             if (answerFlag == false) { //first
                 answerFlag = true;
-                if (socket.name.team == 'red') {
-                    io.emit('answer', '红队抢答');
-                } else if (socket.name.team == 'blue'){
-                    io.emit('answer', '蓝队抢答');
-                }
+                io.emit('answer', socket.name.team + '队抢答');
             }
         } else if(currentStatus == 1) {
             if (answerFlag == false) { //first
                 answerFlag = true;
-                if (socket.name.team == 'red') {
-                    io.emit('answer', '红队请答题');
-                    io.emit('isanswer', 'red');
-                } else if (socket.name.team == 'blue') {
-                    io.emit('answer', '蓝队请答题');
-                    io.emit('isanswer', 'blue');
-                }
+                io.emit('answer', socket.name.team + '队请答题');
+                io.emit('isanswer', socket.name.team);
             }
         }
     });
