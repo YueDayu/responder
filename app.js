@@ -168,9 +168,12 @@ io.on('connection', function (socket) {
             }
         }
         io.emit('status', {redTeam : red, blueTeam : blue});
-        console.log(socket.name);
+        console.log("LOGIN:" + socket.name);
     });
     socket.on('disconnect', function(){
+        if (!socket.name) {
+            return;
+        }
         if (socket.name.team == 'admin') {
             currentStatus = -1;
         } else if (socket.name.team != 'errorTeam' && onlineUsers.hasOwnProperty(socket.name.username)) {
@@ -183,8 +186,15 @@ io.on('connection', function (socket) {
             }
         }
         io.emit('status', {redTeam : red, blueTeam : blue});
+        console.log("LOGOUT:" + socket.name);
     });
     socket.on('admin', function(isStart){ //for admin when admin open the switch
+        if (!socket.name) {
+            return;
+        }
+        if (socket.name.team != 'admin'){
+            return;
+        }
         io.emit('isStart', isStart);
         if (isStart) {
             currentStatus = 1;
@@ -195,12 +205,15 @@ io.on('connection', function (socket) {
         }
     });
     socket.on('answer', function(){ //for team member
+        if (!socket.name) {
+            return;
+        }
         if (currentStatus == 0) { //too fast
             if (answerFlag == false) { //first
                 answerFlag = true;
                 if (socket.name.team == 'red') {
                     io.emit('answer', '红队抢答');
-                } else {
+                } else if (socket.name.team == 'blue'){
                     io.emit('answer', '蓝队抢答');
                 }
             }
@@ -210,7 +223,7 @@ io.on('connection', function (socket) {
                 if (socket.name.team == 'red') {
                     io.emit('answer', '红队请答题');
                     io.emit('isanswer', 'red');
-                } else {
+                } else if (socket.name.team == 'blue') {
                     io.emit('answer', '蓝队请答题');
                     io.emit('isanswer', 'blue');
                 }
